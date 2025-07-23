@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Three.js Character Animator</title>
+  </head>
+  <body>
+    <!-- The loading overlay for smooth transitions -->
+    <div id="loading-overlay"></div>
+
+    <div id="app-container">
+      <div id="ui-panel">
+        <div id="character-header">
+          <div id="character-name">Character Name</div>
+          <div id="character-subtitle">Character Subtitle</div>
+        </div>
+
+        <div id="character-grid">
+          <!-- Character cards will be inserted here by JS -->
+        </div>
+
+        <div id="input-container">
+          <input type="text" id="character-input" placeholder="Describe the animation (e.g., a happy wave)">
+          <button id="generate-btn">Generate</button>
+            <button id="debug-btn" style="background-color: #b91c1c;">Debug Skeletons</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="src/main.tsx"></script>
+  </body>
+</html>

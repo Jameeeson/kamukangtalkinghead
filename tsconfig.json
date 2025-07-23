@@ -1,0 +1,23 @@
+// tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "lib": ["ESNext", "DOM"],
+    "moduleResolution": "bundler",
+    "strict": true,
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "noEmit": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "skipLibCheck": true,
+
+    /* JSX configuration */
+    "jsx": "react-jsx" // Tells TS how to handle JSX syntax. Required for .tsx files.
+  },
+  "include": ["src", "src/main.tsx"] // Tell TS which files to check
+}
