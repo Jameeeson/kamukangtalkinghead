@@ -24,10 +24,20 @@
         <div id="input-container">
           <input type="text" id="character-input" placeholder="Describe the animation (e.g., a happy wave)">
           <button id="generate-btn">Generate</button>
-            <button id="debug-btn" style="background-color: #b91c1c;">Debug Skeletons</button>
+            <button id="debug-btn" style="background-color: #b91c1c; color: aliceblue;">Redo last action</button>
         </div>
       </div>
     </div>
+    <script type="importmap">
+{
+    "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "@pixiv/three-vrm": "https://cdn.jsdelivr.net/npm/@pixiv/three-vrm@2.0.7/lib/three-vrm.module.js",
+        "three/examples/jsm/loaders/GLTFLoader.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/loaders/GLTFLoader.js",
+        "three/examples/jsm/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js"
+    }
+}
+</script>
 
     <script type="module" src="src/main.tsx"></script>
   </body>
