@@ -4,27 +4,138 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Three.js Character Animator</title>
+    <title>AI Character Animator</title>
   </head>
-  <body>
+  <body class="theme-dark">
     <!-- The loading overlay for smooth transitions -->
     <div id="loading-overlay"></div>
 
-    <div id="app-container">
-      <div id="ui-panel">
-        <div id="character-header">
-          <div id="character-name">Character Name</div>
-          <div id="character-subtitle">Character Subtitle</div>
+    <div id="main" class="layout-land ratio-normal">
+      <!-- Left panel for 3D character view -->
+      <div id="left">
+        <div class="border"></div>
+        <div id="avatar">
+          <!-- Three.js canvas will be appended here -->
         </div>
-
-        <div id="character-grid">
-          <!-- Character cards will be inserted here by JS -->
+        <div id="loading">
+          <div id="loading-back"></div>
+          <div id="loading-top"></div>
+          <div id="loading-value">Ready</div>
         </div>
+      </div>
 
-        <div id="input-container">
-          <input type="text" id="character-input" placeholder="Describe the animation (e.g., a happy wave)">
-          <button id="generate-btn">Generate</button>
-            <button id="debug-btn" style="background-color: #b91c1c; color: aliceblue;">Redo last action</button>
+      <!-- Right panel for character selection and status -->
+      <div id="right">
+        <div class="border"></div>
+        <div class="pages">
+          <div id="character-header" class="row">
+            <div class="column">
+              <div class="text">
+                <div class="label">Character:</div>
+                <div id="character-name">Winter</div>
+              </div>
+              <div class="text">
+                <div class="label">Type:</div>
+                <div id="character-subtitle">Waifu</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="vbar"></div>
+          
+          <div id="character-selection" class="row">
+            <div class="column">
+              <div class="text">
+                <div class="label">Select:</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="column">
+              <div id="character-grid" class="rowWrap">
+                <!-- Character cards will be inserted here by JS -->
+              </div>
+            </div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div id="emotion-selection" class="row">
+            <div class="column">
+              <div class="text">
+                <div class="label">Emotion:</div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="column">
+              <div id="emotion-grid" class="rowWrap">
+                <!-- Basic Emotions -->
+                <div class="command emotion-btn" data-emotion="neutral">Neutral</div>
+                <div class="command emotion-btn" data-emotion="happy">Happy</div>
+                <div class="command emotion-btn" data-emotion="angry">Angry</div>
+                <div class="command emotion-btn" data-emotion="sad">Sad</div>
+                <div class="command emotion-btn" data-emotion="fear">Fear</div>
+                <div class="command emotion-btn" data-emotion="disgust">Disgust</div>
+                <div class="command emotion-btn" data-emotion="love">Love</div>
+                <div class="command emotion-btn" data-emotion="sleep">Sleep</div>
+                
+                <!-- Clear & Distinctive New Emotions -->
+                <div class="command emotion-btn" data-emotion="pout">Pout</div>
+                <div class="command emotion-btn" data-emotion="smirk">Smirk</div>
+                <div class="command emotion-btn" data-emotion="wink">Wink</div>
+                <div class="command emotion-btn" data-emotion="surprised">Surprised</div>
+                <div class="command emotion-btn" data-emotion="flirty">Flirty</div>
+                <div class="command emotion-btn" data-emotion="shy">Shy</div>
+                <div class="command emotion-btn" data-emotion="excited">Excited</div>
+                <div class="command emotion-btn" data-emotion="serious">Serious</div>
+                <div class="command emotion-btn" data-emotion="embarrassed">Embarrassed</div>
+                <div class="command emotion-btn" data-emotion="content">Content</div>
+                <div class="command emotion-btn" data-emotion="dreamy">Dreamy</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div id="controls" class="row">
+            <div class="column">
+              <div class="command" id="debug-btn">
+                <div class="label">Actions:</div>
+                Redo Last
+              </div>
+            </div>
+          </div>
+          
+          <div class="row">
+            <div class="column">
+              <div class="command" id="test-tts-btn">
+                Test TTS
+              </div>
+            </div>
+          </div>
+
+          <div class="vbar"></div>
+
+          <div id="status-section" class="row">
+            <div class="column">
+              <div class="text">
+                <div class="label">Status:</div>
+                <div id="status-indicator">Ready</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom panel for input -->
+      <div id="bottom">
+        <div class="border"></div>
+        <div class="row">
+          <input type="text" id="character-input" placeholder="Describe the animation or chat with the character...">
+          <div class="command" id="generate-btn">Generate</div>
         </div>
       </div>
     </div>
