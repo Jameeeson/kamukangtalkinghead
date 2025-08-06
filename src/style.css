@@ -567,6 +567,82 @@ input[type="text"]::placeholder {
   height: 100%; 
 }
 
+#chat-container {
+    position: absolute;
+    bottom: 20px; /* Position it above the loading bar */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 500px;
+    z-index: 10; /* Make sure it's above the canvas but below the loading bar if needed */
+    display: flex;
+    justify-content: center;
+    padding-bottom: 50px; /* Add padding so it doesn't overlap the loading bar */
+}
+
+/* The chat bubble itself */
+#chat-bubble {
+    background-color: rgba(40, 40, 50, 0.85);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+    padding: 15px 20px;
+    color: #e0e0e0;
+    font-size: 16px;
+    max-height: 150px; /* Limit height */
+    overflow-y: auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    opacity: 1;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: translateY(0);
+}
+
+/* For hiding/showing the bubble */
+#chat-bubble.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+/* The text content inside the bubble */
+#chat-text {
+    white-space: pre-wrap; /* Respects line breaks from the AI */
+    word-wrap: break-word; /* Prevents long words from overflowing */
+}
+
+/* The typing indicator (three dots) */
+#typing-indicator {
+    padding-top: 5px;
+    text-align: center;
+}
+
+#typing-indicator.hidden {
+    display: none;
+}
+
+#typing-indicator span {
+    animation-name: blink;
+    animation-duration: 1.4s;
+    animation-iteration-count: infinite;
+    animation-fill-mode: both;
+    font-size: 24px;
+    line-height: 0;
+}
+
+#typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+#typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes blink {
+    0% { opacity: 0.2; }
+    20% { opacity: 1; }
+    100% { opacity: 0.2; }
+}
+
 #main.layout-land #left { 
   top: 0; 
   left: 0; 
@@ -637,17 +713,87 @@ input[type="text"]::placeholder {
   max-width: 750px; 
 }
 
-@media (max-width: 1000px) {
-  #main.layout-land #left { 
-    bottom: 50%; 
+
+/* --- MOBILE RESPONSIVE STYLES --- */
+@media (max-width: 700px), (max-height: 600px) {
+  html, body {
+    font-size: 12px;
+    min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
   }
-  #main.layout-land #bottom { 
-    top: 50%; 
+  #main {
+    width: 100vw !important;
+    height: 100vh !important;
+    min-width: 0;
+    min-height: 0;
+    left: 0;
+    top: 0;
+    transform: none;
+    border-radius: 0 !important;
   }
-  #main.layout-port #right { 
-    bottom: 40%; 
+  #left, #right, #bottom {
+    position: static !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-width: 0;
+    max-width: 100vw;
+    border-radius: 0 !important;
+    box-sizing: border-box;
   }
-  #main.layout-port #bottom { 
-    top: 60%; 
+  #avatar, #view {
+    position: relative !important;
+    width: 100vw !important;
+    height: 50vw !important;
+    min-height: 200px;
+    max-height: 60vh;
+    border-radius: 0 !important;
+  }
+  #character-grid {
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+  .character-card {
+    width: 48px;
+    height: 48px;
+    font-size: 0.8em;
+  }
+  .card-name {
+    font-size: 0.6em;
+    padding: 1px 0;
+  }
+  #emotion-grid {
+    gap: 2px;
+  }
+  .emotion-btn {
+    min-width: 40px;
+    font-size: 0.8em;
+    padding: 2px 4px;
+  }
+  .command, .text {
+    font-size: 1.1rem;
+    height: 2rem;
+    line-height: 2rem;
+    padding: 0 4px;
+    gap: 6px;
+  }
+  #bottom {
+    padding: 10px 5px 10px 5px;
+  }
+  #loading {
+    width: 90vw;
+    left: 5vw;
+    font-size: 0.9rem;
+  }
+  #loading-value {
+    left: 90px;
+    font-size: 1.1rem;
+  }
+  .pages, .page, .row, .column {
+    padding: 0;
+    margin: 0;
+    row-gap: 2px;
+    column-gap: 2px;
   }
 }

@@ -17,6 +17,14 @@
         <div id="avatar">
           <!-- Three.js canvas will be appended here -->
         </div>
+         <div id="chat-container">
+            <div id="chat-bubble" class="hidden">
+                <div id="chat-text"></div>
+                <div id="typing-indicator" class="hidden">
+                    <span>.</span><span>.</span><span>.</span>
+                </div>
+            </div>
+        </div>
         <div id="loading">
           <div id="loading-back"></div>
           <div id="loading-top"></div>
@@ -77,23 +85,7 @@
                 <div class="command emotion-btn" data-emotion="happy">Happy</div>
                 <div class="command emotion-btn" data-emotion="angry">Angry</div>
                 <div class="command emotion-btn" data-emotion="sad">Sad</div>
-                <div class="command emotion-btn" data-emotion="fear">Fear</div>
-                <div class="command emotion-btn" data-emotion="disgust">Disgust</div>
-                <div class="command emotion-btn" data-emotion="love">Love</div>
-                <div class="command emotion-btn" data-emotion="sleep">Sleep</div>
-                
-                <!-- Clear & Distinctive New Emotions -->
-                <div class="command emotion-btn" data-emotion="pout">Pout</div>
-                <div class="command emotion-btn" data-emotion="smirk">Smirk</div>
-                <div class="command emotion-btn" data-emotion="wink">Wink</div>
                 <div class="command emotion-btn" data-emotion="surprised">Surprised</div>
-                <div class="command emotion-btn" data-emotion="flirty">Flirty</div>
-                <div class="command emotion-btn" data-emotion="shy">Shy</div>
-                <div class="command emotion-btn" data-emotion="excited">Excited</div>
-                <div class="command emotion-btn" data-emotion="serious">Serious</div>
-                <div class="command emotion-btn" data-emotion="embarrassed">Embarrassed</div>
-                <div class="command emotion-btn" data-emotion="content">Content</div>
-                <div class="command emotion-btn" data-emotion="dreamy">Dreamy</div>
               </div>
             </div>
           </div>
@@ -133,10 +125,28 @@
       <!-- Bottom panel for input -->
       <div id="bottom">
         <div class="border"></div>
-        <div class="row">
-          <input type="text" id="character-input" placeholder="Describe the animation or chat with the character...">
-          <div class="command" id="generate-btn">Generate</div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Talk Row -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 0;">
+            <input type="text" id="talk-input" placeholder="Chat with the character...">
+          </div>
+          <div style="flex-shrink: 0;">
+            <div class="command" id="talk-btn">Talk</div>
+          </div>
         </div>
+
+        <!-- Motion Row -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 0;">
+            <input type="text" id="motion-input" placeholder="Describe a motion to generate...">
+          </div>
+          <div style="flex-shrink: 0;">
+            <div class="command" id="motion-btn">Generate Motion</div>
+          </div>
+        </div>
+      </div>
+
       </div>
     </div>
     <script type="importmap">
