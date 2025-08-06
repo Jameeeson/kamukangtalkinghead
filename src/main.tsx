@@ -765,7 +765,7 @@ class LipSync {
           this.vowelShapes[Math.floor(Math.random() * this.vowelShapes.length)];
       }
 
-      const value = 0.3 + 0.2 * Math.random(); // Reduced from 0.6 + 0.4 for more subtle lip sync
+      const value = 0.4 + 0.2 * Math.random(); // Reduced from 0.6 + 0.4 for more subtle lip sync
       console.log(`[LipSync] Setting ${newVowel} to ${value.toFixed(2)}`);
       this.setMorphs(this.lipSyncMap[newVowel], value);
       this.lastVowel = newVowel;
@@ -953,7 +953,7 @@ floorTexture.repeat.set(10, 10); // Adjust repetition as needed
 const floorMaterial = new THREE.MeshBasicMaterial({ map: floorTexture });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 floor.rotation.x = -Math.PI / 2;
-floor.position.y = -1; // Slightly above ground to avoid z-fighting
+floor.position.y = -0.9; // Slightly above ground to avoid z-fighting
 
 
 const sky = new Sky();
@@ -1115,8 +1115,16 @@ const intersectionPoint = new THREE.Vector3();
 
 // --- Mouse Gaze Delay Variables ---
 let lastMouseUpdate = 0;
-const mouseGazeDelay = 50; // 500ms delay before following mouse
+const mouseGazeDelay = 50; // 50ms delay before following mouse
 let pendingMouseTarget: THREE.Vector2 | null = null;
+
+// --- Natural Gaze Behavior Variables ---
+let isTransitioningGaze = false;
+let lastCameraGlanceTime = 0;
+let nextCameraGlanceTime = 0;
+const CAMERA_GLANCE_INTERVAL_MIN = 1000; // 8 seconds minimum
+const CAMERA_GLANCE_INTERVAL_MAX = 8000; // 15 seconds maximum
+const CAMERA_GLANCE_DURATION = 2000; // 2 seconds looking at camera
 // --- END ADD ---
 
 // --- DOM Elements ---
@@ -1383,6 +1391,16 @@ async function playAudioWithLipSync(base64: string): Promise<void> {
       return;
     }
     try {
+      // Pre-talking: Look at camera briefly before starting to speak
+      if (idleManager) {
+        const cameraPosition = new THREE.Vector3();
+        camera.getWorldPosition(cameraPosition);
+        idleManager.setLookAtTarget(cameraPosition);
+      }
+      
+      // Small delay to let the character look at camera before talking
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const audioData = atob(base64);
       const arrayBuffer = new ArrayBuffer(audioData.length);
       const uint8Array = new Uint8Array(arrayBuffer);
@@ -1398,6 +1416,10 @@ async function playAudioWithLipSync(base64: string): Promise<void> {
       lipSync.start();
       source.onended = () => {
         lipSync?.stop();
+        // After talking, give a brief moment before returning to mouse tracking
+        setTimeout(() => {
+          // This delay allows for natural transition back to mouse gaze
+        }, 500);
         resolve();
       };
       source.start(0);
@@ -1459,10 +1481,7 @@ async function handleTalkClick() {
   talkBtn.textContent = "Talking...";
   updateStatus("Talking to AI...");
   
-  // Show chat bubble with typing indicator
-  chatBubble.classList.remove("hidden");
-  chatText.textContent = "";
-  typingIndicator.classList.remove("hidden");
+  // Don't show chat bubble yet - wait until we get the first response token
   
   try {
     updateStatus("Asking companion AI...");
@@ -1486,6 +1505,12 @@ async function handleTalkClick() {
         const data = JSON.parse(event.data);
         
         if (data.type === 'token') {
+          // Show chat bubble on first token (if not already shown)
+          if (chatBubble.classList.contains("hidden")) {
+            chatBubble.classList.remove("hidden");
+            chatText.textContent = "";
+            typingIndicator.classList.remove("hidden");
+          }
           // Hide typing indicator and start showing text
           typingIndicator.classList.add("hidden");
           chatText.textContent += data.content;
@@ -1556,8 +1581,10 @@ async function fallbackToRegularAPI(prompt: string) {
     const { response: answer } = await companionResponse.json();
     if (!answer) throw new Error("Invalid response from companion");
     
-    // Hide typing indicator and show the response
-    typingIndicator.classList.add("hidden");
+    // Show chat bubble with the response
+    chatBubble.classList.remove("hidden");
+    chatText.textContent = "";
+    typingIndicator.classList.add("hidden"); // Make sure typing indicator is hidden
     
     // Reveal text word by word for better UX
     await revealTextWordByWord(answer, chatText, 50);
@@ -1650,8 +1677,18 @@ async function handleMotionClick() {
       console.warn("TTS error:", error);
     }
     if (audioBase64) {
+      // Show chat bubble with the AI response before playing audio
+      chatBubble.classList.remove("hidden");
+      chatText.textContent = answer;
+      typingIndicator.classList.add("hidden"); // Make sure typing indicator is hidden
+      
       updateStatus("Playing speech with lip sync...");
       await playAudioWithLipSync(audioBase64);
+      
+      // Hide chat bubble after speech is complete
+      setTimeout(() => {
+        chatBubble.classList.add("hidden");
+      }, 2000); // 2 second delay after speech ends
     }
     if (action === "generate" && keywords && keywords.length > 0) {
       try {
@@ -1682,6 +1719,8 @@ async function handleMotionClick() {
     updateStatus(
       `Error: ${error instanceof Error ? error.message : String(error)}`
     );
+    // Hide chat bubble on error
+    chatBubble.classList.add("hidden");
   } finally {
     motionBtn.classList.remove("disabled");
     motionBtn.textContent = "Generate Motion";
@@ -2023,37 +2062,63 @@ function animate() {
   }
 
   // --- GAZE CONTROL LOGIC ---
-  // Check if character is talking - if so, look at camera instead of mouse
+  const currentTime = performance.now();
+  
+  // Initialize next camera glance time if not set
+  if (nextCameraGlanceTime === 0) {
+    nextCameraGlanceTime = currentTime + Math.random() * (CAMERA_GLANCE_INTERVAL_MAX - CAMERA_GLANCE_INTERVAL_MIN) + CAMERA_GLANCE_INTERVAL_MIN;
+  }
+  
+  // Check if character is talking - if so, look at camera
   if (lipSync?.isTalking()) {
     // During talking, character should look at the camera (user)
     if (idleManager) {
       const cameraPosition = new THREE.Vector3();
       camera.getWorldPosition(cameraPosition);
       idleManager.setLookAtTarget(cameraPosition);
+      isTransitioningGaze = false; // Clear any transition state
     }
   } else {
-    // When not talking, follow mouse gaze as normal
-    // 1. Update the intersection plane to be in front of the character, facing the camera.
-    // This plane acts as a "virtual screen" for the mouse to interact with.
-    if (currentModel) {
-      const cameraDirection = new THREE.Vector3();
-      camera.getWorldDirection(cameraDirection);
-      // Position the plane at the character's location
-      const modelPosition = new THREE.Vector3();
-      currentModel.getWorldPosition(modelPosition);
-      intersectionPlane.setFromNormalAndCoplanarPoint(cameraDirection, modelPosition);
-    }
+    // When not talking, check for natural camera glances or follow mouse
+    const shouldGlanceAtCamera = currentTime >= nextCameraGlanceTime && 
+                                 currentTime < (nextCameraGlanceTime + CAMERA_GLANCE_DURATION);
+    
+    if (shouldGlanceAtCamera) {
+      // Natural camera glance during idle time
+      if (idleManager) {
+        const cameraPosition = new THREE.Vector3();
+        camera.getWorldPosition(cameraPosition);
+        idleManager.setLookAtTarget(cameraPosition);
+      }
+      
+      // Schedule next camera glance
+      if (currentTime >= (nextCameraGlanceTime + CAMERA_GLANCE_DURATION)) {
+        nextCameraGlanceTime = currentTime + Math.random() * (CAMERA_GLANCE_INTERVAL_MAX - CAMERA_GLANCE_INTERVAL_MIN) + CAMERA_GLANCE_INTERVAL_MIN;
+      }
+    } else {
+      // Follow mouse gaze as normal
+      // 1. Update the intersection plane to be in front of the character, facing the camera.
+      // This plane acts as a "virtual screen" for the mouse to interact with.
+      if (currentModel) {
+        const cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+        // Position the plane at the character's location
+        const modelPosition = new THREE.Vector3();
+        currentModel.getWorldPosition(modelPosition);
+        intersectionPlane.setFromNormalAndCoplanarPoint(cameraDirection, modelPosition);
+      }
 
-    // 2. Cast a ray from the camera through the normalized mouse position.
-    raycaster.setFromCamera(mousePosition, camera);
+      // 2. Cast a ray from the camera through the normalized mouse position.
+      raycaster.setFromCamera(mousePosition, camera);
 
-    // 3. Find where the ray intersects our virtual screen.
-    raycaster.ray.intersectPlane(intersectionPlane, intersectionPoint);
+      // 3. Find where the ray intersects our virtual screen.
+      raycaster.ray.intersectPlane(intersectionPlane, intersectionPoint);
 
-    // 4. Feed this 3D intersection point to the IdleManager.
-    // The IdleManager will decide whether to use it or perform its random idle movements.
-    if (idleManager) {
-      idleManager.setLookAtTarget(intersectionPoint);
+      // 4. Feed this 3D intersection point to the IdleManager.
+      // The IdleManager will decide whether to use it or perform its random idle movements.
+      if (idleManager) {
+        idleManager.setLookAtTarget(intersectionPoint);
+      }
     }
   }
   // --- END OF GAZE CONTROL LOGIC ---
